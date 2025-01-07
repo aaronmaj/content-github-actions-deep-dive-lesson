@@ -53,6 +53,7 @@ jobs:
         path: ${{ github.sha }}.zip
 
   publish:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -67,3 +68,18 @@ jobs:
         body: New release for ${{ github.sha }}. Release notes on the documentation site.
         draft: false
         prerelease: false
+
+    - name: download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: zipped-bundle
+
+    - name: upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        asset_content_type: application/zip
+        asset_name: source-code_with_libraries.zip
+        asset_path: ./${{ github.sha }}.zip
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
